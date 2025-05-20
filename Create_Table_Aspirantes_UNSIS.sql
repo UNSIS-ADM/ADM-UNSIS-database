@@ -49,12 +49,34 @@ CREATE TABLE public."Usuario_rol" (
     CONSTRAINT fk_usuario_rol_rol FOREIGN KEY (rol_id)
         REFERENCES public."Rol" (id)
 );
+-- Tabla para tokens de autenticación
+CREATE TABLE public."Usuarios_Auth" (
+    id serial NOT NULL,
+    token character varying(255) NOT NULL,
+    usuario_clave integer NOT NULL,
+    fecha_creacion timestamp without time zone DEFAULT now(),
+    fecha_expiracion timestamp without time zone,
+    activo boolean DEFAULT true,
+    CONSTRAINT "UsuariosAuth_pkey" PRIMARY KEY (id),
+    CONSTRAINT fk_authtoken_usuario FOREIGN KEY (usuario_clave)
+        REFERENCES public."Usuarios" ("Clave") ON DELETE CASCADE
+);
+
+-- Índices para mejorar rendimiento en autenticación
+CREATE INDEX idx_authtoken_token ON public."Usuarios_Auth"(token);
+CREATE INDEX idx_authtoken_usuario ON public."Usuarios_Auth"(usuario_clave);
+CREATE INDEX idx_authtoken_activo ON public."Usuarios_Auth"(activo) WHERE activo = true;
+
+-- Comentario descriptivo
 
 -- Índices para mejorar rendimiento
 CREATE INDEX idx_aspirante_id_usuario ON public."Aspirante"(id_usuario);
 CREATE INDEX idx_aspirante_idSede ON public."Aspirante"(idSede);
 CREATE INDEX idx_usuario_rol_clave ON public."Usuario_rol"(usuarios_clave);
 CREATE INDEX idx_usuario_rol_id ON public."Usuario_rol"(rol_id);
+CREATE INDEX idx_authtoken_token ON public."Usuarios_Auth"(token);
+CREATE INDEX idx_authtoken_usuario ON public."Usuarios_Auth"(usuario_clave);
+CREATE INDEX idx_authtoken_activo ON public."Usuarios_Auth"(activo) WHERE activo = true;
 
 -- Comentarios descriptivos
 COMMENT ON TABLE public."Rol" IS 'Tabla de roles de usuarios del sistema';
@@ -62,3 +84,4 @@ COMMENT ON TABLE public."Usuarios" IS 'Tabla de usuarios del sistema';
 COMMENT ON TABLE public."Sede" IS 'Tabla de sedes donde aplican los aspirantes';
 COMMENT ON TABLE public."Aspirante" IS 'Tabla de aspirantes y sus resultados de admisión';
 COMMENT ON TABLE public."Usuario_rol" IS 'Tabla de relación entre usuarios y roles';
+COMMENT ON TABLE public."Usuarios_Auth" IS 'Tabla para almacenar tokens de autenticación de usuarios';
